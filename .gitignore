@@ -1,0 +1,22 @@
+# Go binary files
+/bin/
+/obj/
+
+# Dependencies - Go modules
+/vendor/
+
+# Test result files
+*.test
+*.out
+
+# IDE files
+.idea/
+*.iml
+*.vscode/
+
+# GoLand-specific
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db

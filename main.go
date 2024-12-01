@@ -21,23 +21,36 @@ func main() {
 
 	form := huh.NewForm(
 		huh.NewGroup(huh.NewNote().
-			Title("ToDoCLI").
-			Description("Welcome to _ToDoCLI!_.\n\n").
+			Title("\nToDoCLI").
+			Description("Welcome to _ToDoCLI!_\n\n").
 			Next(true).
 			NextLabel("Proceed"),
 		),
 
 		// Create a Task
-		huh.NewGroup(huh.NewInput().
-			Title("Task name:").
-			Prompt("* ").
-			Validate(func(t string) error {
-				if t == "" {
-					return fmt.Errorf("please enter a task name")
-				}
-				return nil
-			}).
-			Value(&task.Title),
+		huh.NewGroup(
+			// Prompt for task name
+			huh.NewInput().
+				Title("Task name:").
+				Prompt("* ").
+				Validate(func(t string) error {
+					if t == "" {
+						return fmt.Errorf("please enter a task name")
+					}
+					return nil
+				}).
+				Value(&task.Title),
+
+			// Prompt for description
+			huh.NewText().
+				Title("Description:").
+				Value(&task.Description),
+
+			huh.NewSelect[string]().
+				Title("Choose a tag:").
+				Options(
+					huh.NewOptions("Personal", "School", "Work", "Other")...).
+				Value(&task.Tag),
 		),
 	)
 	err := form.Run()

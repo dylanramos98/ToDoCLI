@@ -1,22 +1,73 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
-	"github.com/charmbracelet/huh"
+	"os"
+	"strings"
+	"time"
+
+	"github.com/dustin/go-humanize"
 )
 
-//TIP <p>To run your code, right-click the code and select <b>Run</b>.</p> <p>Alternatively, click
-// the <icon src="AllIcons.Actions.Execute"/> icon in the gutter and select the <b>Run</b> menu item from here.</p>
+type Task struct {
+	Id          int
+	Title       string
+	Description string
+	Tag         string
+	Status      bool
+	Created     time.Time
+}
 
 func main() {
-	//TIP <p>Press <shortcut actionId="ShowIntentionActions"/> when your caret is at the underlined text
-	// to see how GoLand suggests fixing the warning.</p><p>Alternatively, if available, click the lightbulb to view possible fixes.</p>
-	s := "gopher"
-	fmt.Println("Hello and welcome, %s!", s)
+	fmt.Println("Let's build some tasks!")
+	var tasks []Task
+	scanner := bufio.NewScanner(os.Stdin)
 
-	for i := 1; i <= 5; i++ {
-		//TIP <p>To start your debugging session, right-click your code in the editor and select the Debug option.</p> <p>We have set one <icon src="AllIcons.Debugger.Db_set_breakpoint"/> breakpoint
-		// for you, but you can always add more by pressing <shortcut actionId="ToggleLineBreakpoint"/>.</p>
-		fmt.Println("i =", 100/i)
+	for {
+		// Prompt user for input
+		fmt.Println("\nEnter task details:")
+
+		// Get Title
+		fmt.Print("Title: ")
+		scanner.Scan()
+		title := scanner.Text()
+
+		// Get Description
+		fmt.Print("Description: ")
+		scanner.Scan()
+		description := scanner.Text()
+
+		// Get Tag
+		fmt.Print("Tag: ")
+		scanner.Scan()
+		tag := scanner.Text()
+
+		// Add Task to List
+		task := Task{
+			Id:          len(tasks) + 1,
+			Title:       title,
+			Description: description,
+			Tag:         tag,
+			Status:      false,
+			Created:     time.Now(),
+		}
+		tasks = append(tasks, task)
+
+		// Ask if user wants to create another task
+		fmt.Print("\nDo you want to create another task? (y/n): ")
+		scanner.Scan()
+		response := strings.ToLower(scanner.Text())
+		if response != "y" {
+			break
+		}
 	}
+
+	// Display all tasks
+	fmt.Println("\nAll Created Tasks:")
+	for _, task := range tasks {
+		fmt.Printf("\nTask #%d\nTitle: %s\nDescription: %s\nTag: %s\nCreated: %s\n",
+			task.Id, task.Title, task.Description, task.Tag, humanize.Time(task.Created))
+	}
+
 }

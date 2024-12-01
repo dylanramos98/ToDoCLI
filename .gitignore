@@ -6,6 +6,7 @@
 /vendor/
 
 # Test result files
+tasks.json
 *.test
 *.out
 
@@ -13,9 +14,6 @@
 .idea/
 *.iml
 *.vscode/
-
-# GoLand-specific
-.idea/
 
 # OS files
 .DS_Store

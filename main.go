@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"github.com/charmbracelet/huh"
 	"os"
@@ -14,49 +13,6 @@ type Task struct {
 	Tag         string    `json:"tag"`
 	Status      bool      `json:"status"`
 	Created     time.Time `json:"created"`
-}
-
-// SaveTasks writes the given tasks to a JSON file.
-// If the file exists, it reads and appends to the existing tasks.
-func SaveTasks(newTasks []Task, filename string) error {
-	// Initialize a slice for existing tasks
-	var existingTasks []Task
-
-	// Try to open the file for reading
-	file, err := os.Open(filename)
-	if err != nil {
-		// If file doesn't exist, assume no existing tasks
-		if os.IsNotExist(err) {
-			existingTasks = []Task{}
-		} else {
-			return fmt.Errorf("failed to open file: %w", err)
-		}
-	} else {
-		// Decode existing tasks if the file opens successfully
-		defer file.Close()
-		if err := json.NewDecoder(file).Decode(&existingTasks); err != nil && err.Error() != "EOF" {
-			return fmt.Errorf("failed to decode existing tasks: %w", err)
-		}
-	}
-
-	// Append new tasks to the existing ones
-	existingTasks = append(existingTasks, newTasks...)
-
-	// Reopen the file for writing (or create it if it doesn't exist)
-	file, err = os.Create(filename)
-	if err != nil {
-		return fmt.Errorf("failed to create file: %w", err)
-	}
-	defer file.Close()
-
-	// Write the updated tasks back to the file
-	encoder := json.NewEncoder(file)
-	encoder.SetIndent("", "  ") // Pretty-print JSON
-	if err := encoder.Encode(existingTasks); err != nil {
-		return fmt.Errorf("failed to write tasks: %w", err)
-	}
-
-	return nil
 }
 
 func main() {
@@ -119,6 +75,6 @@ func main() {
 	if err != nil {
 		fmt.Println("Error saving tasks:", err)
 	} else {
-		fmt.Println("Tasks saved to", filename)
+		fmt.Println("All set!")
 	}
 }

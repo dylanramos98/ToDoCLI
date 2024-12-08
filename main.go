@@ -3,7 +3,9 @@ package main
 import (
 	"fmt"
 	"github.com/charmbracelet/huh"
+	"log"
 	"os"
+	"strings"
 	"time"
 )
 
@@ -11,7 +13,7 @@ type Task struct {
 	Title       string    `json:"title"`
 	Description string    `json:"description"`
 	Tag         string    `json:"tag"`
-	Status      bool      `json:"status"`
+	Completed   bool      `json:"completed"`
 	Created     time.Time `json:"created"`
 }
 
@@ -20,7 +22,7 @@ func main() {
 	var menuItem string
 	for {
 		// Create the main menu form
-		form := huh.NewForm(
+		menuForm := huh.NewForm(
 			huh.NewGroup(huh.NewSelect[string]().
 				Title("\nWelcome to ToDoCLI!\n").
 				Description("What would you like to do?\n").
@@ -34,7 +36,7 @@ func main() {
 		)
 
 		// Run the form
-		err := form.Run()
+		err := menuForm.Run()
 		if err != nil {
 			fmt.Println("Error displaying menu:", err)
 			os.Exit(1)
@@ -44,6 +46,35 @@ func main() {
 		switch menuItem {
 		case "View Tasks":
 			// Code to view tasks
+			var filter string
+			var title string
+
+			viewForm := huh.NewForm(
+				huh.NewGroup(
+					huh.NewSelect[string]().
+						Options(huh.NewOptions("Personal", "School", "Work", "Other")...).
+						Title("Filter").
+						Value(&filter),
+
+					huh.NewSelect[string]().
+						Value(&title).
+						Height(8).
+						TitleFunc(func() string {
+							switch filter {
+							default:
+								return "Current Tasks"
+							}
+						}, &filter).
+						OptionsFunc(func() []huh.Option[string] {
+							opts := fetchTasksForFilter(filter, "tasks.json")
+							return huh.NewOptions(opts...)
+						}, &filter),
+				),
+			)
+			err := viewForm.Run()
+			if err != nil {
+				log.Fatal(err)
+			}
 
 		case "Add Task":
 			// Add a new task
@@ -110,4 +141,22 @@ func main() {
 			fmt.Println("Invalid option selected. Please try again.")
 		}
 	}
+}
+
+func fetchTasksForFilter(filter string, filename string) []string {
+	allTasks, err := ReadTasks(filename)
+	if err != nil {
+		fmt.Println("Error reading tasks:", err)
+		return []string{}
+	}
+
+	// Collect task titles that match the filter
+	var filteredTasks []string
+	for _, task := range allTasks {
+		if strings.EqualFold(task.Tag, filter) {
+			filteredTasks = append(filteredTasks, task.Title)
+		}
+	}
+
+	return filteredTasks
 }

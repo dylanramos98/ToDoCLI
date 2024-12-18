@@ -17,6 +17,17 @@ type Task struct {
 	Created     time.Time `json:"created"`
 }
 
+const asciiArt = `
+ /$$$$$$$$        /$$$$$$$             /$$$$$$  /$$       /$$$$$$
+|__  $$__/       | $$__  $$           /$$__  $$| $$      |_  $$_/
+   | $$  /$$$$$$ | $$  \ $$  /$$$$$$ | $$  \__/| $$        | $$  
+   | $$ /$$__  $$| $$  | $$ /$$__  $$| $$      | $$        | $$  
+   | $$| $$  \ $$| $$  | $$| $$  \ $$| $$      | $$        | $$  
+   | $$| $$  | $$| $$  | $$| $$  | $$| $$    $$| $$        | $$  
+   | $$|  $$$$$$/| $$$$$$$/|  $$$$$$/|  $$$$$$/| $$$$$$$$ /$$$$$$
+   |__/ \______/ |_______/  \______/  \______/ |________/|______/
+`
+
 func main() {
 	var tasks []Task
 	var menuItem string
@@ -24,7 +35,7 @@ func main() {
 		// Create the main menu form
 		menuForm := huh.NewForm(
 			huh.NewGroup(huh.NewSelect[string]().
-				Title("\nWelcome to ToDoCLI!\n").
+				Title(asciiArt).
 				Description("What would you like to do?\n").
 				Options(
 					huh.NewOption("View Tasks", "View Tasks"),
@@ -85,7 +96,7 @@ func main() {
 				huh.NewGroup(
 					// Prompt for task name
 					huh.NewInput().
-						Title("Task name:").
+						Title(" Task name:").
 						Prompt("* ").
 						Validate(func(t string) error {
 							if t == "" {

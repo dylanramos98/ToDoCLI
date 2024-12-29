@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 	"github.com/charmbracelet/huh"
+	"github.com/charmbracelet/lipgloss"
+	"github.com/dustin/go-humanize"
 	"log"
 	"os"
 	"strings"
@@ -53,12 +55,13 @@ func main() {
 			os.Exit(1)
 		}
 
-		// Handle the selected option
+		// Select a task to display
 		switch menuItem {
 		case "View Tasks":
 			// Code to view tasks
 			var filter string
 			var title string
+			var filteredTasks []Task
 
 			viewForm := huh.NewForm(
 				huh.NewGroup(
@@ -77,14 +80,51 @@ func main() {
 							}
 						}, &filter).
 						OptionsFunc(func() []huh.Option[string] {
-							opts := fetchTasksForFilter(filter, "tasks.json")
-							return huh.NewOptions(opts...)
+							titles, tasks, err := fetchTasksForFilter(filter, "tasks.json")
+							if err != nil {
+								log.Fatalf("Error fetching tasks: %v", err)
+							}
+							filteredTasks = tasks
+							return huh.NewOptions(titles...)
 						}, &filter),
 				),
 			)
 			err := viewForm.Run()
 			if err != nil {
 				log.Fatal(err)
+			}
+
+			// Find and display the selected task
+			var selectedTask *Task
+			for _, task := range filteredTasks {
+				if task.Title == title {
+					selectedTask = &task
+					break
+				}
+			}
+
+			{
+				var sb strings.Builder
+				keyword := func(s string) string {
+					return lipgloss.NewStyle().Foreground(lipgloss.Color("212")).Render(s)
+				}
+				fmt.Fprintf(&sb,
+					"\n %s \n\n Title: \n %s \n Description: \n %s \n Tag: \n %s \n Created:\n %v \n",
+					lipgloss.NewStyle().Bold(true).Render("Task"),
+					keyword(selectedTask.Title),
+					keyword(selectedTask.Description),
+					keyword(selectedTask.Tag),
+					keyword(humanize.Time(selectedTask.Created)),
+				)
+
+				fmt.Println(
+					lipgloss.NewStyle().
+						Width(40).
+						BorderStyle(lipgloss.RoundedBorder()).
+						BorderForeground(lipgloss.Color("63")).
+						Padding(1, 2).
+						Render(sb.String()),
+				)
 			}
 
 		case "Add Task":
@@ -154,20 +194,20 @@ func main() {
 	}
 }
 
-func fetchTasksForFilter(filter string, filename string) []string {
+func fetchTasksForFilter(filter string, filename string) ([]string, []Task, error) {
 	allTasks, err := ReadTasks(filename)
 	if err != nil {
-		fmt.Println("Error reading tasks:", err)
-		return []string{}
+		return nil, nil, fmt.Errorf("error reading tasks: %w", err)
 	}
 
-	// Collect task titles that match the filter
-	var filteredTasks []string
+	var filteredTasks []Task
+	var filteredTitles []string
 	for _, task := range allTasks {
 		if strings.EqualFold(task.Tag, filter) {
-			filteredTasks = append(filteredTasks, task.Title)
+			filteredTasks = append(filteredTasks, task)
+			filteredTitles = append(filteredTitles, task.Title)
 		}
 	}
 
-	return filteredTasks
+	return filteredTitles, filteredTasks, nil
 }
